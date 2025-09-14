@@ -1,6 +1,10 @@
 from typing import Union
 
 from fastapi import FastAPI
+from db import db_init
+
+# Initializing the database
+db_init()
 
 app = FastAPI()
 

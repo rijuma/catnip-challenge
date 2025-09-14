@@ -1,5 +1,5 @@
 import os
-from sqlmodel import create_engine
+from sqlmodel import create_engine, SQLModel
 
 POSTGRES_HOST = os.getenv("POSTGRES_HOST")
 POSTGRES_USER = os.getenv("POSTGRES_USER")
@@ -9,3 +9,6 @@ POSTGRES_PORT = os.getenv("POSTGRES_PORT")
 DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
 engine = create_engine(DATABASE_URL)
+
+def db_init():
+  SQLModel.metadata.create_all(engine)

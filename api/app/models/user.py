@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
-
-from uuid import UUID, uuid4
-from typing import Optional
 from sqlmodel import Field, SQLModel
+from typing import Optional
+from uuid import UUID, uuid4
 
 
 class User(SQLModel, table=True):

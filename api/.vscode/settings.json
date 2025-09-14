@@ -1,0 +1,5 @@
+{
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/.venv/lib64/python3.9/site-packages"
+  ]
+}

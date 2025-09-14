@@ -1,0 +1,35 @@
+services:
+  catnip-db:
+    image: postgres:latest
+    container_name: catnip-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+      - PGDATA=/var/lib/postgresql/data/
+      - PGPORT=${DB_PORT:-5432}
+    ports:
+      - "${DB_PORT:-5432}:${DB_PORT:-5432}"
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+
+  catnip-api:
+    container_name: catnip-api
+    build: ./catnip-api
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: unless-stopped
+    volumes:
+      - ./catnip-api:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=${DB_HOST:-catnip-db}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PORT=${DB_PORT:-5432}
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - catnip-db

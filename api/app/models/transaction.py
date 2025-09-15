@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from sqlmodel import Field, SQLModel
 from typing import Optional
+from sqlmodel import Field, SQLModel
 from pydantic import field_validator
 
 class TransactionType(str, Enum):
@@ -23,8 +23,9 @@ class Transaction(SQLModel, table=True):
     )
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+    @classmethod
     @field_validator("target_account_id")
-    def validate_transaction(cls, v):
+    def validate_transaction(cls, v: int | None):
         """
         Validates that the target_account_id is set when the transaction type is "transfer",
         otherwise the target_account_id needs to be None.
@@ -38,4 +39,3 @@ class Transaction(SQLModel, table=True):
             raise ValueError(f"target_account_id can't be None if type is '{cls.type}'")
 
         return v
-

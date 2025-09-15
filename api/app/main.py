@@ -1,13 +1,19 @@
-from typing import Union
+from contextlib import asynccontextmanager
+from typing import Union, AsyncGenerator
 
 from fastapi import FastAPI
-from db import db_init
+from .db import db_init
 
-# Initializing the database
-db_init()
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    db_init()
+    yield
 
-app = FastAPI()
+def get_app() -> FastAPI:
+    app = FastAPI(title="Catnip Solutions", lifespan=lifespan)
+    return app
 
+app = get_app()
 
 @app.get("/")
 def read_root():

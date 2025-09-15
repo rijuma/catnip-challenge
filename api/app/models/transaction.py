@@ -5,6 +5,7 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 from pydantic import field_validator
 
+
 class TransactionType(str, Enum):
     DEPOSIT = "deposit"
     WITHDRAW = "withdraw"

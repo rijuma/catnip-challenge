@@ -3,7 +3,6 @@ from decimal import Decimal
 from typing import Optional
 from uuid import UUID, uuid4
 from sqlmodel import Field, SQLModel
-from pydantic import field_validator
 
 
 class Account(SQLModel, table=True):
@@ -21,9 +20,3 @@ class Account(SQLModel, table=True):
     )
     label: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-    @classmethod
-    @field_validator("balance")
-    def validate_balance(cls, v: Decimal):
-        if v < 0:
-            raise ValueError("Balance can't be negative")

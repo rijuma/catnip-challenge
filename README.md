@@ -44,3 +44,33 @@ I'm used to work in Node.js/Deno runtimes for APIs, but since the position requi
 ### Frontend
 
 For frontend I will use [React](https://react.dev) with [TypeScript](https://www.typescriptlang.org), but I don't have a framework decided yet, nor the UI Library. Probably a static (no backend) version with Vite and something like [shadcn/ui](https://ui.shadcn.com) or [Reshaped](https://reshaped.so) for the UI.
+
+## Environment
+
+I've created a Docker Compose environment to easily run the project. In order to run it you should:
+
+- Have [Docker](http://docker.com) installed and running in your environment.
+- Copy the [.env.example](./.env.example) file in the root folder as `.env` and adapt to your needs.
+- run `docker compose up -d`
+
+You should be able to open:
+
+- A test frontend app on [http://localhost:5173](http://localhost:5173)
+- API Swagger docs on [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### Development
+
+In order to work with the API itself, you should have the database running first, so run the following command on the root folder:
+
+```
+docker compose up catnip-db -d
+```
+
+then `cd` into the `./api` folder and setup the environment with:
+
+```
+make venv
+```
+
+to create the virtual environment and install dependencies.
+Feel free to use [Alembic](https://alembic.sqlalchemy.org) if you update the database models to create the migrations.

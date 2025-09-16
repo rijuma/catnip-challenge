@@ -16,4 +16,4 @@ COPY . .
 ARG API_PORT=8000
 ENV API_PORT=${API_PORT}
 EXPOSE ${API_PORT}
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${API_PORT}
+CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${API_PORT}

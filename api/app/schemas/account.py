@@ -1,12 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
 
 
 class AccountCreate(BaseModel):
-    uuid: Optional[UUID]
     user_uuid: UUID
     label: str
     balance: Decimal

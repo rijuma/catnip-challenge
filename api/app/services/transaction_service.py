@@ -5,7 +5,9 @@ from app.models import Transaction
 from app.services import account_service
 from app.exceptions import NotFoundError, ValidationError, DatabaseError, UnexpectedError
 from app.models.transaction import TransactionType
+from .utils.exceptions import catch_service_commit_exceptions
 
+@catch_service_commit_exceptions
 async def create_transaction(
     session: AsyncSession,
     transaction_data: TransactionCreate

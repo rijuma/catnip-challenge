@@ -6,7 +6,7 @@ from sqlmodel import select, or_
 from app.schemas.user import UserCreate, UserUpdate
 from app.exceptions import NotFoundError, ValidationError, DatabaseError
 from app.models import User
-
+from .utils.exceptions import catch_service_commit_exceptions
 
 async def list_users(
     session: AsyncSession,
@@ -34,7 +34,7 @@ async def list_users(
     result = await session.execute(statement)
     return result.scalars().all()
 
-
+@catch_service_commit_exceptions
 async def create_user(session: AsyncSession, user_data: UserCreate) -> User:
     user = User(**user_data.model_dump(exclude_unset=True))
     session.add(user)

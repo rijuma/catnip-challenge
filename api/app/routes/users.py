@@ -1,9 +1,10 @@
 from typing import List, Optional
+from uuid import UUID
 from fastapi import APIRouter, Depends, Query, HTTPException, Path
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.exceptions import ValidationError, DatabaseError
+from app.exceptions import ValidationError, DatabaseError, NotFoundError
 from app.db import get_session
-from app.schemas.user import UserCreate, UserRead
+from app.schemas.user import UserCreate, UserUpdate, UserRead
 from app.services import user_service
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -21,7 +22,8 @@ async def list_users(
 
 @router.post("/", response_model=UserRead)
 async def create_user(
-    user_data: UserCreate, session: AsyncSession = Depends(get_session)
+    user_data: UserCreate,
+    session: AsyncSession = Depends(get_session)
 ):
     try:
         user = await user_service.create_user(session, user_data)
@@ -39,14 +41,40 @@ async def create_user(
         ) from e
 
 
-@router.get("/{user_id}", response_model=UserRead)
+@router.get("/{user_uuid}", response_model=UserRead)
 async def get_user(
-    user_id: int = Path(..., description="ID of the user to retrieve"),
+    user_uuid: UUID = Path(..., description="ID of the user to retrieve"),
     session: AsyncSession = Depends(get_session),
 ):
-    user = await user_service.get_user_by_id(session, user_id)
+    user = await user_service.get_user_by_uuid(session, user_uuid)
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     return user
+
+@router.post("/{user_uuid}", response_model=UserRead)
+async def update_user(
+    user_data: UserUpdate,
+    user_uuid: UUID = Path(..., description="ID of the user to retrieve"),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        user = await user_service.update_user(session, user_uuid, user_data)
+
+        return user
+    except NotFoundError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        ) from e
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        ) from e
+    except DatabaseError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="Database error",
+        ) from e

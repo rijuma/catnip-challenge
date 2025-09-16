@@ -44,8 +44,10 @@ async def get_account(
     session: AsyncSession = Depends(get_session),
 ):
     account = await account_service.get_account_by_uuid(session, account_uuid)
+
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
+
     return account
 
 

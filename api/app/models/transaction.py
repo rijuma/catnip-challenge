@@ -40,7 +40,7 @@ class Transaction(SQLModel, table=True):
     )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"server_default": text("now()")},
+        sa_column_kwargs={"server_default": text("TIMEZONE('utc', now())")},
         nullable=False,
     )
 
@@ -58,7 +58,7 @@ class Transaction(SQLModel, table=True):
                 )
             return target_account_id
 
-        if target_account_id is None:
+        if not target_account_id:
             raise ValueError(f"target_account_id can't be None if type is '{cls.type}'")
 
         if target_account_id == cls.account_id:

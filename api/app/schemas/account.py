@@ -7,14 +7,14 @@ from pydantic import BaseModel
 
 class AccountCreate(BaseModel):
     uuid: Optional[UUID]
-    user_id: int
+    user_uuid: UUID
     label: str
     balance: Decimal
 
 
 class AccountRead(BaseModel):
     uuid: UUID
-    user_id: int
+    user_uuid: UUID
     label: str
     balance: Decimal
     updated_at: datetime

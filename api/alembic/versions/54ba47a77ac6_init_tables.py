@@ -33,10 +33,10 @@ def upgrade() -> None:
         sa.Column("phone", sa.String(), nullable=True),
         sa.Column("address", sa.String(), nullable=True),
         sa.Column(
-            "created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False
+            "created_at", sa.DateTime(), server_default=sa.text("TIMEZONE('utc', now())"), nullable=False
         ),
         sa.Column(
-            "updated_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False
+            "updated_at", sa.DateTime(), server_default=sa.text("TIMEZONE('utc', now())"), nullable=False
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("uuid"),
@@ -56,10 +56,10 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column(
-            "created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False
+            "created_at", sa.DateTime(), server_default=sa.text("TIMEZONE('utc', now())"), nullable=False
         ),
         sa.Column(
-            "updated_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False
+            "updated_at", sa.DateTime(), server_default=sa.text("TIMEZONE('utc', now())"), nullable=False
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],
@@ -81,7 +81,7 @@ def upgrade() -> None:
         sa.Column("target_account_id", sa.Integer(), nullable=True),
         sa.Column("amount", sa.Numeric(precision=12, scale=2), nullable=False),
         sa.Column(
-            "created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False
+            "created_at", sa.DateTime(), server_default=sa.text("TIMEZONE('utc', now())"), nullable=False
         ),
         sa.ForeignKeyConstraint(
             ["account_id"],

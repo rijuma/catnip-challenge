@@ -5,13 +5,18 @@ from pydantic import BaseModel, EmailStr
 
 
 class UserCreate(BaseModel):
-    uuid: Optional[UUID]
     email: EmailStr
     first_name: str
     last_name: str
     phone: Optional[str]
     address: Optional[str]
 
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    phone: Optional[str]
+    address: Optional[str]
 
 class UserRead(BaseModel):
     uuid: UUID

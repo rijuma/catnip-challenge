@@ -30,13 +30,13 @@ class User(SQLModel, table=True):
     address: Optional[str]
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"server_default": text("now()")},
+        sa_column_kwargs={"server_default": text("TIMEZONE('utc', now())")},
         nullable=False
     )
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column_kwargs={
-            "server_default": text("now()"),
+            "server_default": text("TIMEZONE('utc', now())"),
             "onupdate": lambda: datetime.now(timezone.utc)
         },
         nullable=False,

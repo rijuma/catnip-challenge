@@ -18,13 +18,13 @@ async def create_transaction(
     result = await session.exec(statement)
     account = result.one_or_none()
 
-    if account is None:
+    if not account:
         raise HTTPException(
             status_code=400,
             detail=f"account {transaction_data.account_uuid} does not exists",
         )
 
-    transaction = Transaction(**transaction_data.model_dump())
+    transaction = Transaction(**transaction_data.model_dump(exclude_unset=True))
 
     session.add(transaction)
 

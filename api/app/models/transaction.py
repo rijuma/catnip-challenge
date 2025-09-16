@@ -1,9 +1,13 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import Optional
-from sqlmodel import Field, SQLModel, text
+from typing import TYPE_CHECKING, Optional
+from sqlmodel import Field, SQLModel, text, Relationship
 from pydantic import field_validator
+
+# For type check only without importing the class (circular dependencies)
+if TYPE_CHECKING:
+    from .account import Account
 
 
 class TransactionType(str, Enum):
@@ -16,16 +20,22 @@ class Transaction(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     type: TransactionType
     account_id: int = Field(foreign_key="account.id", index=True)
-    target_account_id: int | None = Field(foreign_key="account.id", index=True) # For transfers only
+    target_account_id: int | None = Field(
+        foreign_key="account.id", index=True
+    )  # For transfers only
     amount: Decimal = Field(
         max_digits=12,
         decimal_places=2,
-        gt=0, # A transaction needs to be greater than 0
+        gt=0,  # A transaction needs to be greater than 0
+    )
+    account: Optional["Account"] = Relationship(
+        back_populates="transactions",
+        sa_relationship_kwargs={"foreign_keys": "[Transaction.account_id]"},
     )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column_kwargs={"server_default": text("now()")},
-        nullable=False
+        nullable=False,
     )
 
     @classmethod
@@ -37,7 +47,9 @@ class Transaction(SQLModel, table=True):
         """
         if cls.type != TransactionType.TRANSFER.value:
             if v is not None:
-                raise ValueError(f"target_account_id must be None if type is '{cls.type}'")
+                raise ValueError(
+                    f"target_account_id must be None if type is '{cls.type}'"
+                )
             return v
 
         if v is None:

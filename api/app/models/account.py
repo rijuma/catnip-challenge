@@ -3,7 +3,6 @@ from decimal import Decimal
 from uuid import UUID, uuid4
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, text, Relationship
-from .transaction import Transaction
 
 
 class Account(SQLModel, table=True):
@@ -21,7 +20,7 @@ class Account(SQLModel, table=True):
         },  # This is passed down directly to the database schema.
     )
     transactions: List["Transaction"] = Relationship(
-        back_populates="accounts",
+        back_populates="account",
         sa_relationship_kwargs={
             "primaryjoin": "or_(Account.id==Transaction.account_id, Account.id==Transaction.target_account_id)"
         },

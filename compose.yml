@@ -37,6 +37,7 @@ services:
     ports:
       - "${API_PORT:-8000}:${API_PORT:-8000}"
     environment:
+      - ENV=${ENV:-dev}
       - POSTGRES_HOST=${DB_HOST:-catnip-db}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}

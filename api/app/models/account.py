@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Optional
 from uuid import UUID, uuid4
-from sqlmodel import Field, SQLModel, text
+from typing import Optional, List
+from sqlmodel import Field, SQLModel, text, Relationship
+from .transaction import Transaction
 
 
 class Account(SQLModel, table=True):
@@ -19,16 +20,22 @@ class Account(SQLModel, table=True):
             "server_default": "0.00"
         },  # This is passed down directly to the database schema.
     )
+    transactions: List["Transaction"] = Relationship(
+        back_populates="accounts",
+        sa_relationship_kwargs={
+            "primaryjoin": "or_(Account.id==Transaction.account_id, Account.id==Transaction.target_account_id)"
+        },
+    )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column_kwargs={"server_default": text("now()")},
-        nullable=False
+        nullable=False,
     )
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column_kwargs={
             "server_default": text("now()"),
-            "onupdate": lambda: datetime.now(timezone.utc)
+            "onupdate": lambda: datetime.now(timezone.utc),
         },
         nullable=False,
     )

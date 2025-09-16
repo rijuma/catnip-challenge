@@ -1,12 +1,13 @@
-
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from .db import db_init, async_engine
-from .routes import api_router
+from app.db import db_init, async_engine
+from app.routes import api_router
+from app.env import DEVELOPMENT
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await db_init()
+    if DEVELOPMENT:
+        await db_init()
     yield
     await async_engine.dispose()
 

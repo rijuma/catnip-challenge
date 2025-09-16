@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class Account(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    uuid: UUID = Field(default_factory=uuid4, unique=True)
+    uuid: UUID = Field(default_factory=uuid4, unique=True, index=True)
     user_id: int | None = Field(foreign_key="user.id", index=True)
     label: str
     balance: Decimal = Field(
@@ -25,9 +25,11 @@ class Account(SQLModel, table=True):
     )
     transactions: List["Transaction"] = Relationship(
         back_populates="account",
-        sa_relationship_kwargs={
-            "primaryjoin": "or_(Account.id==Transaction.account_id, Account.id==Transaction.target_account_id)"
-        },
+        sa_relationship_kwargs={"foreign_keys": "[Transaction.account_id]"},
+    )
+    incoming_transactions: List["Transaction"] = Relationship(
+        back_populates="target_account",
+        sa_relationship_kwargs={"foreign_keys": "[Transaction.target_account_id]"},
     )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),

@@ -1,25 +1,15 @@
-from contextlib import asynccontextmanager
-from typing import Union, AsyncGenerator
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from .db import db_init
+from .db import db_init, async_engine
+from .routes import api_router
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    db_init()
+async def lifespan(app: FastAPI):
+    await db_init()
     yield
+    await async_engine.dispose()
 
-def get_app() -> FastAPI:
-    app = FastAPI(title="Catnip Solutions", lifespan=lifespan)
-    return app
+app = FastAPI(title="Catnip API", lifespan=lifespan)
 
-app = get_app()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+app.include_router(api_router)

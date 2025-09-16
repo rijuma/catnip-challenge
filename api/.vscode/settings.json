@@ -2,5 +2,10 @@
   "python.defaultInterpreterPath": "${workspaceFolder}/api/.venv/bin/python",
   "python.analysis.extraPaths": [
     "${workspaceFolder}/.venv/lib64/python3.10/site-packages"
-  ]
+  ],
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  }
 }

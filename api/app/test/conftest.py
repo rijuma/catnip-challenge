@@ -1,5 +1,6 @@
-import pytest
 from typing import AsyncGenerator
+from collections.abc import Iterator
+import pytest
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
@@ -7,7 +8,7 @@ from testcontainers.postgres import PostgresContainer
 
 
 @pytest.fixture(scope="session")
-def postgres_url() -> str:
+def postgres_url() -> Iterator[str]:
     """Spin up a disposable Postgres container for the test session."""
     with PostgresContainer("postgres:15") as postgres:
         url = postgres.get_connection_url()

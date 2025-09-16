@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID, uuid4
-from typing import TYPE_CHECKING, Optional, List
-from sqlmodel import Field, SQLModel, text, Relationship
+from typing import TYPE_CHECKING, Optional, List, cast
+from sqlmodel import Field, SQLModel, Column, DateTime, text, Relationship
+from sqlmodel.main import SQLModelConfig
+from pydantic import ConfigDict
 
 # For type check only without importing the class (circular dependencies)
 if TYPE_CHECKING:
@@ -10,6 +12,11 @@ if TYPE_CHECKING:
 
 
 class Account(SQLModel, table=True):
+    # This enforces validations (??)
+    model_config: SQLModelConfig = cast(SQLModelConfig, ConfigDict(
+        validate_assignment=True,
+        extra="forbid",
+    ))
     id: Optional[int] = Field(default=None, primary_key=True)
     uuid: UUID = Field(default_factory=uuid4, unique=True, index=True)
     user_id: int | None = Field(foreign_key="user.id", index=True)
@@ -33,14 +40,18 @@ class Account(SQLModel, table=True):
     )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"server_default": text("TIMEZONE('utc', now())")},
-        nullable=False,
+        sa_column=Column(
+            DateTime(timezone=True),
+            server_default=text("TIMEZONE('utc', now())"),
+            nullable=False,
+        ),
     )
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={
-            "server_default": text("TIMEZONE('utc', now())"),
-            "onupdate": lambda: datetime.now(timezone.utc),
-        },
-        nullable=False,
+        sa_column=Column(
+            DateTime(timezone=True),
+            server_default=text("TIMEZONE('utc', now())"),
+            onupdate=lambda: datetime.now(timezone.utc),
+            nullable=False,
+        ),
     )

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional, Annotated
 from uuid import UUID, uuid4
-from sqlmodel import Field, SQLModel, text
+from sqlmodel import Field, SQLModel, Column, DateTime, text
 
 # Tags should start with @ and have only lowercase letters and numbers
 # With at least 3 characters (besides the @).
@@ -26,18 +26,22 @@ class User(SQLModel, table=True):
         ]
     first_name: str
     last_name: str
-    phone: Optional[str]
-    address: Optional[str]
+    phone: Optional[str] = Field(default=None, nullable=True)
+    address: Optional[str] = Field(default=None, nullable=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"server_default": text("TIMEZONE('utc', now())")},
-        nullable=False
+        sa_column=Column(
+            DateTime(timezone=True),
+            server_default=text("TIMEZONE('utc', now())"),
+            nullable=False,
+        ),
     )
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={
-            "server_default": text("TIMEZONE('utc', now())"),
-            "onupdate": lambda: datetime.now(timezone.utc)
-        },
-        nullable=False,
+        sa_column=Column(
+            DateTime(timezone=True),
+            server_default=text("TIMEZONE('utc', now())"),
+            onupdate=lambda: datetime.now(timezone.utc),
+            nullable=False,
+        ),
     )

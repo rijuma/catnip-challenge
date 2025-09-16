@@ -3,7 +3,7 @@ from decimal import Decimal
 from uuid import UUID, uuid4
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
-from sqlmodel import Field, SQLModel, text, Relationship
+from sqlmodel import Field, SQLModel, Column, DateTime, text, Relationship
 from pydantic import field_validator
 
 # For type check only without importing the class (circular dependencies)
@@ -40,8 +40,11 @@ class Transaction(SQLModel, table=True):
     )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"server_default": text("TIMEZONE('utc', now())")},
-        nullable=False,
+        sa_column=Column(
+            DateTime(timezone=True),
+            server_default=text("TIMEZONE('utc', now())"),
+            nullable=False,
+        ),
     )
 
     @classmethod

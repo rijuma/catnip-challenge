@@ -3,12 +3,24 @@ from decimal import Decimal
 from uuid import UUID
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.account import Account
+from app.models import Account, User
 
+@pytest.fixture
+async def user(session: AsyncSession):
+    mock_user = User(
+        first_name="Jane",
+        last_name="Doe",
+        email="jane@example.com",
+        tag="test"
+    )
+    session.add(mock_user)
+    await session.commit()
+    await session.refresh(mock_user)
+    return mock_user
 
 @pytest.mark.asyncio
-async def test_account_defaults(session: AsyncSession):
-    acc = Account(label="Savings", user_id=123)
+async def test_account_defaults(session: AsyncSession, user: User):
+    acc = Account(label="Savings", user_id=user.id)
     session.add(acc)
     await session.commit()
     await session.refresh(acc)
@@ -23,16 +35,16 @@ async def test_account_defaults(session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_account_balance_cannot_be_negative(session: AsyncSession):
+async def test_account_balance_cannot_be_negative(session: AsyncSession, user: User):
     with pytest.raises(Exception):  # DB constraint may raise IntegrityError
-        acc = Account(label="Invalid", user_id=123, balance=Decimal("-10.00"))
+        acc = Account(label="Invalid", user_id=user.id, balance=Decimal("-10.00"))
         session.add(acc)
         await session.commit()
 
 
 @pytest.mark.asyncio
-async def test_account_custom_balance(session: AsyncSession):
-    acc = Account(label="Checking", user_id=123, balance=Decimal("150.75"))
+async def test_account_custom_balance(session: AsyncSession, user: User):
+    acc = Account(label="Checking", user_id=user.id, balance=Decimal("150.75"))
     session.add(acc)
     await session.commit()
     await session.refresh(acc)
@@ -41,8 +53,8 @@ async def test_account_custom_balance(session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_account_created_at_is_timezone_aware(session: AsyncSession):
-    acc = Account(label="Investment", user_id=123)
+async def test_account_created_at_is_timezone_aware(session: AsyncSession, user: User):
+    acc = Account(label="Investment", user_id=user.id)
     session.add(acc)
     await session.commit()
     await session.refresh(acc)
@@ -53,19 +65,19 @@ async def test_account_created_at_is_timezone_aware(session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_account_user_id_assignment(session: AsyncSession):
-    acc = Account(label="Joint", user_id=123)
+async def test_account_user_id_assignment(session: AsyncSession, user: User):
+    acc = Account(label="Joint", user_id=user.id)
     session.add(acc)
     await session.commit()
     await session.refresh(acc)
 
-    assert acc.user_id == 123
+    assert acc.user_id == user.id
 
 
 @pytest.mark.asyncio
-async def test_account_uuid_uniqueness(session: AsyncSession):
-    acc1 = Account(label="Wallet", user_id=123)
-    acc2 = Account(label="Savings", user_id=456)
+async def test_account_uuid_uniqueness(session: AsyncSession, user: User):
+    acc1 = Account(label="Wallet", user_id=user.id)
+    acc2 = Account(label="Savings", user_id=user.id)
 
     session.add(acc1)
     session.add(acc2)

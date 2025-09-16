@@ -1,8 +1,12 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID, uuid4
-from typing import Optional, List
+from typing import TYPE_CHECKING, Optional, List
 from sqlmodel import Field, SQLModel, text, Relationship
+
+# For type check only without importing the class (circular dependencies)
+if TYPE_CHECKING:
+    from .transaction import Transaction
 
 
 class Account(SQLModel, table=True):

@@ -2,7 +2,7 @@ from collections.abc import AsyncGenerator
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-import app.models as _  # Imports all models for the db_init below
+import app.models as _  # Imports all models so SQLModel.metadata is populated
 from app.env import DATABASE_URL
 
 async_engine = create_async_engine(DATABASE_URL, echo=True)

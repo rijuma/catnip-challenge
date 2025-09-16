@@ -1,13 +1,14 @@
 import asyncio
 from logging.config import fileConfig
 
-from typing import Any
+from typing import Any, Literal
 from sqlmodel import SQLModel
 from sqlmodel.sql.sqltypes import AutoString
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.engine import Connection
 from alembic import context
+from alembic.autogenerate.api import AutogenContext
 from alembic.config import Config
 import app.models as _
 from app.env import DATABASE_URL
@@ -31,12 +32,12 @@ target_metadata = SQLModel.metadata
 def render_item(
     type_: str,
     obj: Any,
-    autogen_context: dict[str, Any],
-) -> str | bool | None:
+    autogen_context: AutogenContext,
+) -> str | Literal[False]:
     """Custom render hook to replace SQLModel's AutoString with sa.String."""
     if isinstance(obj, AutoString):
         return "sa.String()"
-    return None
+    return False
 
 
 def run_migrations_offline() -> None:
@@ -54,7 +55,7 @@ def run_migrations_offline() -> None:
 
 def do_run_migrations(connection: Connection) -> None:
     """Run migrations given a sync connection inside async run_sync()."""
-    context.configure(
+    context.configure(  # pylint: disable=no-member
         connection=connection, target_metadata=target_metadata, render_item=render_item
     )  # pylint: disable=no-member
     with context.begin_transaction():  # pylint: disable=no-member

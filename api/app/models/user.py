@@ -1,8 +1,11 @@
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Annotated
 from uuid import UUID, uuid4
 from sqlmodel import Field, SQLModel, text
 
+# Tags should start with @ and have only lowercase letters and numbers
+# With at least 3 characters (besides the @).
+TAG_PATTERN = r"^\@[a-z0-9]+$"
 
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -11,7 +14,15 @@ class User(SQLModel, table=True):
         unique=True
     )
     email: str = Field(unique=True, index=True)
-    tag: Optional[str] = Field(default=None, unique=True, index=True)
+    tag: Annotated[
+            Optional[str],
+            Field(
+                regex=TAG_PATTERN,
+                min_length=4,
+                sa_column_kwargs={"unique": True},
+                description="User handle, must start with @ and contain at least 3 lowercase letters or digits",
+            )
+        ]
     first_name: str
     last_name: str
     phone: Optional[str]

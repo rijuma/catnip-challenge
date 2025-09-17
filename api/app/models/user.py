@@ -1,7 +1,12 @@
 from datetime import datetime, timezone
-from typing import Optional, Annotated
+from typing import TYPE_CHECKING, Optional, Annotated
 from uuid import UUID, uuid4
-from sqlmodel import Field, SQLModel, Column, DateTime, text
+from sqlmodel import Field, SQLModel, Column, DateTime, text, Relationship
+
+# For type check only without importing the class (circular dependencies)
+if TYPE_CHECKING:
+    from .account import Account
+
 
 # Tags should start with @ and have only lowercase letters and numbers
 # With at least 3 characters (besides the @).
@@ -28,6 +33,7 @@ class User(SQLModel, table=True):
     last_name: str
     phone: Optional[str] = Field(default=None, nullable=True)
     address: Optional[str] = Field(default=None, nullable=True)
+    accounts: list["Account"] = Relationship(back_populates="user")
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(

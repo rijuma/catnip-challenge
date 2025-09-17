@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.exceptions import ValidationError, DatabaseError, NotFoundError
 from app.db import get_session
 from app.schemas.user import UserCreate, UserUpdate, UserRead
-from app.services import user_service
+from app.schemas.account import AccountRead
+from app.services import user_service, account_service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -78,3 +79,16 @@ async def update_user(
             status_code=500,
             detail="Database error",
         ) from e
+
+@router.get("/{user_uuid}/accounts", response_model=List[AccountRead])
+async def get_user_accounts(
+    user_uuid: UUID = Path(..., description="ID of the user to retrieve"),
+    session: AsyncSession = Depends(get_session),
+    offset: int = Query(0, ge=0, description="Number of items to skip"),
+    limit: int = Query(10, ge=1, le=100, description="Maximum number of items to return"),
+):
+    accounts = await account_service.get_user_accounts(session, user_uuid, offset, limit)
+
+    accounts_read = [AccountRead.from_account(acc) for acc in accounts]
+
+    return accounts_read

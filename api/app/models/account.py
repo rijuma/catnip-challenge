@@ -8,6 +8,7 @@ from pydantic import ConfigDict
 
 # For type check only without importing the class (circular dependencies)
 if TYPE_CHECKING:
+    from .user import User
     from .transaction import Transaction
 
 
@@ -19,7 +20,7 @@ class Account(SQLModel, table=True):
     ))
     id: Optional[int] = Field(default=None, primary_key=True)
     uuid: UUID = Field(default_factory=uuid4, unique=True, index=True)
-    user_id: int | None = Field(foreign_key="user.id", index=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
     label: str
     balance: Decimal = Field(
         default=0.00,
@@ -30,6 +31,7 @@ class Account(SQLModel, table=True):
             "server_default": "0.00"
         },  # This is passed down directly to the database schema.
     )
+    user: "User" = Relationship(back_populates="accounts")
     transactions: List["Transaction"] = Relationship(
         back_populates="account",
         sa_relationship_kwargs={"foreign_keys": "[Transaction.account_id]"},

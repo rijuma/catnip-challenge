@@ -22,15 +22,18 @@ class Transaction(SQLModel, table=True):
     uuid: UUID = Field(default_factory=uuid4, unique=True, index=True)
     type: TransactionType
     account_id: int = Field(foreign_key="account.id", index=True)
-    target_account_id: int | None = Field(
-        foreign_key="account.id", index=True
+    label: str
+    target_account_id: Optional[int] = Field(
+        foreign_key="account.id",
+        index=True,
+        nullable=True
     )  # For transfers only
     amount: Decimal = Field(
         max_digits=12,
         decimal_places=2,
         gt=0,  # A transaction needs to be greater than 0
     )
-    account: Optional["Account"] = Relationship(
+    account: "Account" = Relationship(
         back_populates="transactions",
         sa_relationship_kwargs={"foreign_keys": "[Transaction.account_id]"},
     )

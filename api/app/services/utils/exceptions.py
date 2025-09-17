@@ -1,8 +1,9 @@
 from functools import wraps
 from typing import Awaitable, Callable, TypeVar, ParamSpec, cast
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from pydantic import ValidationError as PydanticValidationError
+from pydantic import ValidationError as PydanticRequestValidationError
 from sqlmodel.ext.asyncio.session import AsyncSession
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from app.exceptions import ValidationError, DatabaseError
 
 P = ParamSpec("P")
@@ -28,10 +29,10 @@ def catch_service_commit_exceptions(
         try:
             return await func(*args, **kwargs)
 
-        except PydanticValidationError as e:
+        except (PydanticRequestValidationError, RequestValidationError, ResponseValidationError) as e:
             if session:
                 await session.rollback()
-            raise ValidationError("Invalid data") from e
+            raise ValidationError(f"Invalid data: {e}") from e
 
         except (IntegrityError, SQLAlchemyError) as e:
             if session:

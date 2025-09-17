@@ -1,47 +1,46 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from typing import List
+from uuid import UUID
+from fastapi import APIRouter, Depends, Query, HTTPException, Path
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
 from app.db import get_session
-from app.models import Account, Transaction
+from app.services import transaction_service
 from app.schemas.transaction import TransactionCreate, TransactionRead
+from .utils.exceptions import route_service_exceptions
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
-@router.post("/transactions", response_model=TransactionRead, status_code=201)
+@router.get("/", response_model=List[TransactionRead], status_code=201)
+@route_service_exceptions
+async def list_transaction(
+    session: AsyncSession = Depends(get_session),
+    offset: int = Query(0, ge=0, description="Number of items to skip"),
+    limit: int = Query(10, ge=1, le=100, description="Maximum number of items to return"),
+
+):
+    transactions = await transaction_service.list_transactions(session, offset, limit)
+    transactions_read = [TransactionRead.from_transaction(trx) for trx in transactions]
+
+    return transactions_read
+
+@router.post("/", response_model=TransactionRead, status_code=201)
+@route_service_exceptions
 async def create_transaction(
     transaction_data: TransactionCreate,
     session: AsyncSession = Depends(get_session),
 ):
+    transaction = await transaction_service.create_transaction(session, transaction_data)
 
-    statement = select(Account).where(Account.uuid == transaction_data.account_uuid)
-    result = await session.exec(statement)
-    account = result.one_or_none()
+    return TransactionRead.from_transaction(transaction)
 
-    if not account:
-        raise HTTPException(
-            status_code=400,
-            detail=f"account {transaction_data.account_uuid} does not exists",
-        )
+@router.get("/{transaction_uuid}", response_model=TransactionRead)
+@route_service_exceptions
+async def get_transaction(
+    transaction_uuid: UUID = Path(..., description="UUID of the transaction to retrieve"),
+    session: AsyncSession = Depends(get_session),
+):
+    transaction = await transaction_service.get_transaction_by_uuid(session, transaction_uuid)
 
-    transaction = Transaction(**transaction_data.model_dump(exclude_unset=True))
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Account not found")
 
-    session.add(transaction)
-
-    try:
-        await session.commit()
-        await session.refresh(transaction)
-    except IntegrityError as e:
-        await session.rollback()
-        raise HTTPException(
-            status_code=400,
-            detail=f"Integrity error: {str(e.orig)}",
-        ) from e
-    except SQLAlchemyError as e:
-        await session.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail="Database error",
-        ) from e
-
-    return transaction
+    return TransactionRead.from_transaction(transaction)

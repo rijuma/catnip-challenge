@@ -55,7 +55,7 @@ I've created a Docker Compose environment to easily run the project. In order to
 
 You should be able to open:
 
-- A test frontend app on [http://localhost:5173](http://localhost:5173)
+- A test frontend app on [http://localhost:5173](http://localhost:5173) (Didn't make it in time...)
 - API Swagger docs on [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ### Development

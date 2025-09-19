@@ -1,21 +1,8 @@
 // src/App.jsx
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import MainLayout from '@/layouts/main-layout'
-import HomePage from '@/pages/home-page'
-import UsersPage from '@/pages/users-page'
-import UsersNewPage from '@/pages/users-new-page'
+import { routes } from './routes'
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <MainLayout />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: 'users', element: <UsersPage /> },
-      { path: 'users/new', element: <UsersNewPage /> },
-    ],
-  },
-])
+const router = createBrowserRouter(routes)
 
 function App() {
   return <RouterProvider router={router} />

@@ -1,10 +1,13 @@
 import * as React from 'react'
 import { Link } from 'react-router'
-import { GalleryVerticalEnd } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
+import { Cat } from 'lucide-react'
+import { NavUser } from './nav-user'
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -15,15 +18,19 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 
-// This is sample data.
 const data = {
+  user: {
+    name: 'Admin',
+    email: 'admin@catnip-bank.com',
+    avatar: 'https://randomuser.me/api/portraits/lego/7.jpg',
+  },
   navMain: [
     {
       title: 'Home',
       items: [
         {
           title: 'Dashboard',
-          url: '/',
+          to: { pathname: '/' },
         },
       ],
     },
@@ -32,12 +39,11 @@ const data = {
       items: [
         {
           title: 'New user',
-          url: '/users/new',
+          to: { pathname: '/users/new' },
         },
         {
           title: 'List users',
-          url: '/users',
-          isActive: true,
+          to: { pathname: '/users' },
         },
       ],
     },
@@ -45,6 +51,9 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const location = useLocation()
+  const currentPathname = location.pathname
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -53,11 +62,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <Link to={{ pathname: '/' }}>
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <GalleryVerticalEnd className="size-4" />
+                  <Cat className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">Documentation</span>
-                  <span className="">v1.0.0</span>
+                  <span className="font-medium">Meownybags Dashboard</span>
+                  <span className="">v0.0.1</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -65,16 +74,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <Link to={{ pathname: item.url }}>{item.title}</Link>
+                {item.items.map(({ title, to }) => (
+                  <SidebarMenuItem key={title}>
+                    <SidebarMenuButton asChild isActive={currentPathname === to.pathname}>
+                      <Link to={to}>{title}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -83,6 +91,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ))}
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={data.user} />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

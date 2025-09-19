@@ -11,9 +11,11 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { useAppMatches } from '@/hooks'
 
 import { Outlet } from 'react-router-dom'
+import { Fragment } from 'react/jsx-runtime'
 
 export default function SidebarLayout() {
   const matches = useAppMatches()
+  console.log({ matches })
   const crumbs = matches
     .filter((match) => Boolean(match.handle?.crumb))
     // map to an array of breadcrumb elements
@@ -21,16 +23,18 @@ export default function SidebarLayout() {
       const crumb = match.handle.crumb
       const data = match.loaderData
 
+      console.log({ crumb })
+
       // Handle dynamic crumbs that are functions
       const breadcrumbTitle = typeof crumb === 'function' ? crumb(data) : crumb
 
       return (
-        <>
+        <Fragment key={idx}>
           {idx !== 0 ? <BreadcrumbSeparator className="hidden md:block" /> : null}
-          <BreadcrumbItem key={match.id} className="hidden md:block">
+          <BreadcrumbItem className="hidden md:block">
             <BreadcrumbLink to={{ pathname: match.pathname }}>{breadcrumbTitle}</BreadcrumbLink>
           </BreadcrumbItem>
-        </>
+        </Fragment>
       )
     })
 

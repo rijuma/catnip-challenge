@@ -1,8 +1,8 @@
-import * as React from 'react'
 import { Link } from 'react-router'
 import { useLocation } from 'react-router-dom'
 import { Cat } from 'lucide-react'
 import { NavUser } from './nav-user'
+import type { ComponentProps, FC } from 'react'
 
 import {
   Sidebar,
@@ -50,7 +50,7 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export const AppSidebar: FC<ComponentProps<typeof Sidebar>> = ({ ...props }) => {
   const location = useLocation()
   const currentPathname = location.pathname
 

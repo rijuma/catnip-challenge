@@ -1,7 +1,7 @@
 // src/App.jsx
 import SidebarLayout from '@/layouts/sidebar-layout'
 import HomePage from '@/pages/home-page'
-import UsersListPage from '@/pages/users-lists-page'
+import UsersListPage from '@/pages/users-list-page'
 import UserDetailsPage from '@/pages/user-details-page'
 import UsersNewPage from '@/pages/users-new-page'
 import type { AppRouteObject } from '@/types'
@@ -23,6 +23,9 @@ export const routes: AppRouteObject[] = [
       },
       {
         path: 'users',
+        handle: {
+          crumb: 'Users',
+        },
         element: NoLayout,
         children: [
           {

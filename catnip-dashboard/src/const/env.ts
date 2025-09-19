@@ -1,1 +1,1 @@
-export const apiUrl = process.env.PUBLIC_API_URL || 'localhost:8000'
+export const apiUrl = import.meta.env.VITE_API_URL || '//localhost:8000'

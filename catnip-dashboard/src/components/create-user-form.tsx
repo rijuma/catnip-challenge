@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { createUserSchema, updateUserSchema, type CreateUser, type UpdateUser } from '@/schemas'
+import { createUserSchema, userSchema, type CreateUser, type User } from '@/schemas'
 import { useForm } from 'react-hook-form'
 import { FormInput } from './form-Input'
 import { Form } from './ui/form'
@@ -9,21 +9,19 @@ import { useState, type FC } from 'react'
 import { api } from '@/api/client'
 
 export type Props = {
-  user?: CreateUser | UpdateUser
+  user?: CreateUser
   onCancel?: () => void
-  onSuccess?: () => void
+  onSuccess?: (user: User) => void
 }
-export const EditUserForm: FC<Props> = ({ user, onCancel, onSuccess }) => {
+export const EditUserForm: FC<Props> = ({ user = {}, onCancel, onSuccess }) => {
   const [loading, setLoading] = useState(false)
 
-  const form = useForm<CreateUser | UpdateUser>({
-    resolver: zodResolver(user ? updateUserSchema : createUserSchema),
-    defaultValues: {
-      ...user,
-    },
+  const form = useForm<CreateUser>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: { ...user },
   })
 
-  const onSubmit = async (values: CreateUser | UpdateUser) => {
+  const onSubmit = async (values: CreateUser) => {
     if (loading) return
 
     try {
@@ -31,9 +29,13 @@ export const EditUserForm: FC<Props> = ({ user, onCancel, onSuccess }) => {
 
       setLoading(true)
 
-      const payload = await api.post(`/users`, createUserSchema)
+      const user = await api.post(`/users`, userSchema, {
+        body: values,
+      })
 
-      onSuccess?.()
+      if (!user) throw new Error('Server Error')
+
+      onSuccess?.(user)
     } catch (e) {
       form.setError('root', { message: `Error creating user: ${(e as Error).message}` })
     } finally {
@@ -46,7 +48,7 @@ export const EditUserForm: FC<Props> = ({ user, onCancel, onSuccess }) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(() => onSubmit)}>
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Create user</CardTitle>

@@ -10,13 +10,15 @@ import {
 import { Input } from './ui/input'
 import { cn, type ClassName } from '@/lib/utils'
 
-export type Props = Omit<ComponentProps<typeof FormField>, 'render'> & {
+export type Props = Omit<ComponentProps<typeof FormField>, 'render' | 'control'> & {
   className: ClassName
   label: string
   placeholder?: string
   description?: string
+  control: any // Shortcut to avoid Type mayhem (TODO: Fix properly)
   type?: HTMLInputElement['type']
 }
+
 export const FormInput: FC<Props> = ({
   placeholder,
   className,

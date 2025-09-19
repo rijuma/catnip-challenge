@@ -15,15 +15,13 @@ import { Fragment } from 'react/jsx-runtime'
 
 export default function SidebarLayout() {
   const matches = useAppMatches()
-  console.log({ matches })
+
   const crumbs = matches
     .filter((match) => Boolean(match.handle?.crumb))
     // map to an array of breadcrumb elements
     .map((match, idx) => {
       const crumb = match.handle.crumb
       const data = match.loaderData
-
-      console.log({ crumb })
 
       // Handle dynamic crumbs that are functions
       const breadcrumbTitle = typeof crumb === 'function' ? crumb(data) : crumb

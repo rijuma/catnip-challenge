@@ -7,7 +7,7 @@ function UsersNewPage() {
 
   return (
     <Section>
-      <EditUserForm onCancel={() => navigate('/users/')} />
+      <EditUserForm onCancel={() => navigate('/users/')} onSuccess={() => navigate('/users/')} />
     </Section>
   )
 }

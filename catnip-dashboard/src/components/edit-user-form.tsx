@@ -1,26 +1,47 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CreateUserSchema, UpdateUserSchema, type CreateUser, type UpdateUser } from '@/schemas'
+import { createUserSchema, updateUserSchema, type CreateUser, type UpdateUser } from '@/schemas'
 import { useForm } from 'react-hook-form'
 import { FormInput } from './form-Input'
 import { Form } from './ui/form'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from './ui/button'
-import type { FC } from 'react'
+import { useState, type FC } from 'react'
+import { api } from '@/api/client'
 
 export type Props = {
   user?: CreateUser | UpdateUser
   onCancel?: () => void
+  onSuccess?: () => void
 }
-export const EditUserForm: FC<Props> = ({ user, onCancel }) => {
+export const EditUserForm: FC<Props> = ({ user, onCancel, onSuccess }) => {
+  const [loading, setLoading] = useState(false)
+
   const form = useForm<CreateUser | UpdateUser>({
-    resolver: zodResolver(user ? UpdateUserSchema : CreateUserSchema),
+    resolver: zodResolver(user ? updateUserSchema : createUserSchema),
     defaultValues: {
       ...user,
     },
   })
 
-  function onSubmit(values: CreateUser | UpdateUser) {
+  const onSubmit = async (values: CreateUser | UpdateUser) => {
+    if (loading) return
+
+    try {
+      form.clearErrors()
+
+      setLoading(true)
+
+      const payload = await api.post(`/users`, createUserSchema)
+
+      onSuccess?.()
+    } catch (e) {
+      form.setError('root', { message: `Error creating user: ${(e as Error).message}` })
+    } finally {
+      setLoading(false)
+    }
+
     console.log(values)
+    return false
   }
 
   return (

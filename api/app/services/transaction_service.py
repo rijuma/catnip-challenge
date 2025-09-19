@@ -1,17 +1,16 @@
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 from uuid import UUID
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlmodel import select, or_, col
+from sqlmodel import select, or_, col, func
 from app.schemas.transaction import TransactionCreate
 from app.models import Transaction, Account
 from app.services import account_service
-from app.exceptions import NotFoundError, ValidationError, DatabaseError, UnexpectedError
+from app.exceptions import NotFoundError, ValidationError, UnexpectedError
 from app.models.transaction import TransactionType
 from .utils.exceptions import catch_service_commit_exceptions
 
-async def list_transactions(session: AsyncSession, offset: int, limit: int) -> Sequence[Transaction]:
+async def list_transactions(session: AsyncSession, offset: int, limit: int) -> Tuple[Sequence[Transaction], int]:
     statement = (
         select(Transaction)
         .options(selectinload(Transaction.account))         # type: ignore
@@ -22,7 +21,11 @@ async def list_transactions(session: AsyncSession, offset: int, limit: int) -> S
     result = await session.execute(statement)
     transactions = result.scalars().all()
 
-    return transactions
+    count_stmt = select(func.count()).select_from(Transaction)  # pylint: disable=not-callable
+    count = await session.scalar(count_stmt)
+    count = int(count or 0)
+
+    return transactions, count
 
 
 @catch_service_commit_exceptions
@@ -81,15 +84,15 @@ async def create_transaction(
         session.add(transaction)
 
         await session.commit()
-        await session.refresh(transaction, attribute_names=["account", "target_account"]) # It needs the user relation for the account_uuid and target_account_uuid
+        # It needs the user relation for the account_uuid and target_account_uuid
+        await session.refresh(transaction, attribute_names=["account", "target_account"])
 
-        return transaction
-    except IntegrityError as e:
+    except Exception:
         await session.rollback()
-        raise ValidationError(f"Integrity error: {str(e.orig)}") from e
-    except SQLAlchemyError as e:
-        await session.rollback()
-        raise DatabaseError("Database error") from e
+        raise
+
+    return transaction
+
 
 async def get_transaction_by_uuid(session: AsyncSession, transaction_uuid: UUID) -> Optional[Transaction]:
     statement = (
@@ -104,7 +107,7 @@ async def get_transaction_by_uuid(session: AsyncSession, transaction_uuid: UUID)
 
 async def get_account_transactions(
     session: AsyncSession, account_uuid: UUID, offset: int, limit: int
-) -> Sequence[Transaction]:
+) ->  Tuple[Sequence[Transaction], int]:
     # Ensure the account exists
     account = await account_service.get_account_by_uuid(session, account_uuid)
 
@@ -129,4 +132,18 @@ async def get_account_transactions(
     )
 
     result = await session.execute(statement)
-    return result.scalars().all()
+    transactions =  result.scalars().all()
+
+    count_stmt = (
+        select(func.count()).select_from(Transaction).join(  # pylint: disable=not-callable
+            Account,
+            or_(
+                col(Transaction.account_id) == col(Account.id),
+                col(Transaction.target_account_id) == col(Account.id),
+            ),
+        ).where(Account.uuid == account_uuid)
+    )
+    count = await session.scalar(count_stmt)
+    count = int(count or 0)
+
+    return transactions, count

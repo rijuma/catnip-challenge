@@ -1,15 +1,15 @@
-from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query, HTTPException, Path
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.db import get_session
 from app.services import transaction_service
 from app.schemas.transaction import TransactionCreate, TransactionRead
+from app.schemas.utils import PaginatedResponse
 from .utils.exceptions import route_service_exceptions
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
-@router.get("/", response_model=List[TransactionRead], status_code=201)
+@router.get("/", response_model=PaginatedResponse[TransactionRead], status_code=201)
 @route_service_exceptions
 async def list_transaction(
     session: AsyncSession = Depends(get_session),
@@ -17,10 +17,13 @@ async def list_transaction(
     limit: int = Query(10, ge=1, le=100, description="Maximum number of items to return"),
 
 ):
-    transactions = await transaction_service.list_transactions(session, offset, limit)
+    transactions, count = await transaction_service.list_transactions(session, offset, limit)
     transactions_read = [TransactionRead.from_transaction(trx) for trx in transactions]
 
-    return transactions_read
+    return  PaginatedResponse[TransactionRead](
+        items=transactions_read,
+        count=count,
+    )
 
 @router.post("/", response_model=TransactionRead, status_code=201)
 @route_service_exceptions

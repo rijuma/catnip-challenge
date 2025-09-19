@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query, HTTPException, Path
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,19 +6,28 @@ from app.exceptions import ValidationError, DatabaseError, NotFoundError
 from app.db import get_session
 from app.schemas.user import UserCreate, UserUpdate, UserRead
 from app.schemas.account import AccountRead
+from app.schemas.utils import PaginatedResponse
+
 from app.services import user_service, account_service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.get("/", response_model=List[UserRead])
+@router.get("/", response_model=PaginatedResponse[UserRead])
 async def list_users(
     session: AsyncSession = Depends(get_session),
     offset: int = Query(0, ge=0, description="Number of items to skip"),
     limit: int = Query(10, ge=1, le=100, description="Maximum number of items to return"),
     q: Optional[str] = Query(None, description="Search string"),
 ):
-    return await user_service.list_users(session, offset, limit, q)
+    users, count = await user_service.list_users(session, offset, limit, q)
+    user_reads = [UserRead.model_validate(user) for user in users]
+
+    return PaginatedResponse[UserRead](
+        items=user_reads,
+        count=count,
+    )
+
 
 
 @router.post("/", response_model=UserRead)
@@ -80,15 +89,18 @@ async def update_user(
             detail="Database error",
         ) from e
 
-@router.get("/{user_uuid}/accounts", response_model=List[AccountRead])
+@router.get("/{user_uuid}/accounts", response_model=PaginatedResponse[AccountRead])
 async def get_user_accounts(
     user_uuid: UUID = Path(..., description="ID of the user to retrieve"),
     session: AsyncSession = Depends(get_session),
     offset: int = Query(0, ge=0, description="Number of items to skip"),
     limit: int = Query(10, ge=1, le=100, description="Maximum number of items to return"),
 ):
-    accounts = await account_service.get_user_accounts(session, user_uuid, offset, limit)
+    accounts, count = await account_service.get_user_accounts(session, user_uuid, offset, limit)
 
     accounts_read = [AccountRead.from_account(acc) for acc in accounts]
 
-    return accounts_read
+    return PaginatedResponse[AccountRead](
+        items=accounts_read,
+        count=count,
+    )

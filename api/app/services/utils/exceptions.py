@@ -1,8 +1,7 @@
 from functools import wraps
-from typing import Awaitable, Callable, TypeVar, ParamSpec, cast
+from typing import Awaitable, Callable, TypeVar, ParamSpec
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from pydantic import ValidationError as PydanticRequestValidationError
-from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from app.exceptions import ValidationError, DatabaseError
 
@@ -19,24 +18,13 @@ def catch_service_commit_exceptions(
 
     @wraps(func)
     async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        session = cast(AsyncSession | None, kwargs.get("session"))
-        if session is None:
-            for arg in args:
-                if isinstance(arg, AsyncSession):
-                    session = arg
-                    break
-
         try:
             return await func(*args, **kwargs)
 
         except (PydanticRequestValidationError, RequestValidationError, ResponseValidationError) as e:
-            if session:
-                await session.rollback()
             raise ValidationError(f"Invalid data: {e}") from e
 
         except (IntegrityError, SQLAlchemyError) as e:
-            if session:
-                await session.rollback()
             raise DatabaseError("Database error") from e
 
     return wrapper

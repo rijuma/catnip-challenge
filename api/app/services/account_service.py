@@ -1,20 +1,24 @@
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlmodel import select
+from sqlmodel import select, func
 from app.exceptions import NotFoundError, ValidationError
 from app.models import Account
 from app.schemas.account import AccountCreate
 from app.services import user_service
 from .utils.exceptions import catch_service_commit_exceptions
 
-async def list_accounts(session: AsyncSession, offset: int, limit: int) -> Sequence[Account]:
+async def list_accounts(session: AsyncSession, offset: int, limit: int) -> Tuple[Sequence[Account], int]:
     statement = select(Account).options(selectinload(Account.user)).offset(offset).limit(limit)  # type: ignore
     result = await session.execute(statement)
     accounts = result.scalars().all()
 
-    return accounts
+    count_stmt = select(func.count()).select_from(Account)  # pylint: disable=not-callable
+    count = await session.scalar(count_stmt)
+    count = int(count or 0)
+
+    return accounts, count
 
 @catch_service_commit_exceptions
 async def create_account(session: AsyncSession, account_data: AccountCreate) -> Account:
@@ -45,7 +49,7 @@ async def get_account_by_uuid(session: AsyncSession, account_uuid: UUID) -> Opti
 
 async def get_user_accounts(
     session: AsyncSession, user_uuid: UUID, offset: int, limit: int
-) -> Sequence[Account]:
+) -> Tuple[Sequence[Account], int]:
     # Ensure the account exists
     user = await user_service.get_user_by_uuid(session, user_uuid)
 
@@ -62,4 +66,13 @@ async def get_user_accounts(
     )
 
     result = await session.execute(statement)
-    return result.scalars().all()
+    accounts = result.scalars().all()
+
+  # pylint: disable=not-callable
+
+    count_stmt = select(func.count()).select_from(Account).where(Account.user_id == user.id)  # pylint: disable=not-callable
+    count = await session.scalar(count_stmt)
+    count = int(count or 0)
+
+    return accounts, count
+

@@ -17,7 +17,7 @@ export const useUsers = ({ search, page = 0 }: UseUsersFilters) => {
 
   const filters: string[] = []
 
-  if (search) filters.push(`q=${encodeURIComponent(search)}`)
+  if (search && search !== '*') filters.push(`q=${encodeURIComponent(search)}`)
 
   if (page) filters.push(`offset=${(page - 1) * rowsPerPage}`)
 
@@ -26,6 +26,14 @@ export const useUsers = ({ search, page = 0 }: UseUsersFilters) => {
   const urlFilters = filters.join('&')
 
   const fetchUsers = async (signal: AbortSignal) => {
+    // If nothing to search, clear
+    if (!search) {
+      setUserList([])
+      setCount(0)
+      return
+    }
+
+    // Otherwise, do search
     try {
       setLoading(true)
       const response = await api.get(`/users?${urlFilters}`, wrapWithPagination(userSchema), {
@@ -37,6 +45,7 @@ export const useUsers = ({ search, page = 0 }: UseUsersFilters) => {
       setUserList(response.items)
       setCount(response.count)
     } catch (e) {
+      if (e === 'effect') return // Just the useEffect reloading.
       toast('Error fetching users', {
         description: 'There was an error fetching the users. Please try again in a minute.',
       })
@@ -51,7 +60,9 @@ export const useUsers = ({ search, page = 0 }: UseUsersFilters) => {
 
     fetchUsers(signal)
 
-    return () => controller.abort()
+    return () => {
+      controller.abort('effect')
+    }
   }, [search, rowsPerPage, page])
 
   return {

@@ -2,7 +2,6 @@ import { PaginatedTable, type TableColumns, type TableRows } from '@/components/
 import { SearchField } from '@/components/search-field'
 import { Section } from '@/components/section'
 import { useUsers } from '@/hooks'
-import type { User } from '@/schemas'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -33,8 +32,7 @@ function UsersListPage() {
   }
 
   const handleRowClick = (user: any) => {
-    console.log({ user })
-    navigate(`/users/${user.uuid}`)
+    navigate(`/users/${user?.uuid}`)
   }
 
   const handlePageChange = (page: number) => setPage(page)
@@ -56,14 +54,16 @@ function UsersListPage() {
       <div>
         <SearchField autoFocus onDebouncedChange={handleUpdateFilter} />
       </div>
-      <div className={loading ? 'loading' : undefined}>
-        <PaginatedTable
-          onRowClick={handleRowClick}
-          columns={columns}
-          rows={rows}
-          pagination={{ currentPage: page, totalRows: count, onPageChange: handlePageChange }}
-        />
-      </div>
+      {rows.length ? (
+        <div className={loading ? 'loading' : undefined}>
+          <PaginatedTable
+            onRowClick={handleRowClick}
+            columns={columns}
+            rows={rows}
+            pagination={{ currentPage: page, totalRows: count, onPageChange: handlePageChange }}
+          />
+        </div>
+      ) : null}
     </Section>
   )
 }

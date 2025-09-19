@@ -19,7 +19,7 @@ export const userSchema = z.object({
   lastName: z.string().max(255),
   phone: z.string().max(255).optional(),
   address: z.string().max(255).optional(),
-  created_at: z.date(),
-  updated_at: z.date(),
+  createdAt: z.string().pipe(z.coerce.date()),
+  updatedAt: z.string().pipe(z.coerce.date()),
 })
 export type User = z.infer<typeof userSchema>

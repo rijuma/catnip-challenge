@@ -1,7 +1,8 @@
 import { apiUrl } from '@/const'
+import { objectToSnake, objectToCamel } from 'ts-case-convert'
 import { parsePayload } from '../schemas/_utils'
 import { ApiError } from './error'
-import { type ZodType } from 'zod'
+import type { ZodType } from 'zod'
 import type { ApiCallOptions } from '@/types/api'
 
 const fetchApi = async <T extends ZodType, P extends Object>(
@@ -24,7 +25,7 @@ const fetchApi = async <T extends ZodType, P extends Object>(
     // If there's a body we add the proper header.
     const isFormData = body instanceof FormData
     if (!isFormData) headers.set('Content-Type', 'application/json')
-    bodyPayload = isFormData ? body : JSON.stringify(body)
+    bodyPayload = isFormData ? body : JSON.stringify(objectToSnake(body))
   }
 
   const requestInit = {
@@ -56,7 +57,7 @@ const fetchApi = async <T extends ZodType, P extends Object>(
   if (!schema) return
 
   try {
-    const data = parsePayload(payload, schema)
+    const data = parsePayload(objectToCamel(payload), schema)
 
     return data
   } catch (e) {

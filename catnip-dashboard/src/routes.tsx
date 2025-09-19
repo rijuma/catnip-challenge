@@ -1,10 +1,13 @@
 // src/App.jsx
 import SidebarLayout from '@/layouts/sidebar-layout'
 import HomePage from '@/pages/home-page'
-import UsersPage from '@/pages/users-page'
+import UsersListPage from '@/pages/users-lists-page'
 import UserDetailsPage from '@/pages/user-details-page'
 import UsersNewPage from '@/pages/users-new-page'
 import type { AppRouteObject } from '@/types'
+import { Outlet } from 'react-router-dom'
+
+const NoLayout = <Outlet /> // Just an utility class to group URLs without a Layout
 
 export const routes: AppRouteObject[] = [
   {
@@ -20,12 +23,15 @@ export const routes: AppRouteObject[] = [
       },
       {
         path: 'users',
-        handle: {
-          crumb: 'List users',
-        },
-        element: <UsersPage />,
-
+        element: NoLayout,
         children: [
+          {
+            index: true,
+            handle: {
+              crumb: 'List users',
+            },
+            element: <UsersListPage />,
+          },
           {
             path: ':userUUID',
             handle: {

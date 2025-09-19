@@ -3,8 +3,8 @@ import { cn, type ClassName } from '@/lib/utils'
 import { useEffect, useRef, useState, type FC, type KeyboardEvent } from 'react'
 
 export type Props = CommandInputProps & {
-  onChange?: (search: string) => {}
-  onDebouncedChange?: (search: string) => {}
+  onChange?: (search: string) => void
+  onDebouncedChange?: (search: string) => void
   className?: ClassName
 }
 

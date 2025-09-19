@@ -23,7 +23,6 @@ export const EditUserForm: FC<Props> = ({ user = {}, onCancel, onSuccess }) => {
   })
 
   const onSubmit = async (values: CreateUser) => {
-    console.log('Submit!')
     if (loading) return
 
     try {
@@ -35,25 +34,21 @@ export const EditUserForm: FC<Props> = ({ user = {}, onCancel, onSuccess }) => {
         body: values,
       })
 
-      console.log({ user })
-
       if (!user) throw new Error('Server Error')
 
       onSuccess?.(user)
     } catch (e) {
-      console.log('error')
       form.setError('root', { message: `Error creating user: ${(e as Error).message}` })
     } finally {
       setLoading(false)
     }
 
-    console.log(values)
     return false
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className={loading ? 'form-loading' : undefined}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className={loading ? 'loading' : undefined}>
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Create user</CardTitle>

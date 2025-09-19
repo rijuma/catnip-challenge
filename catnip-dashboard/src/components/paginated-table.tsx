@@ -28,16 +28,17 @@ export type TableRow = {
 export type TableRows = TableRow[]
 
 export type Props = {
+  onRowClick?: (row: TableRow['data']) => void
+  columns: TableColumns
+  rows: TableRows
   pagination?: {
     currentPage: number
     totalRows: number
     onPageChange: (page: number) => void
   }
-  columns: TableColumns
-  rows: TableRows
 }
 
-export const PaginatedTable: FC<Props> = ({ columns, rows, pagination }) => {
+export const PaginatedTable: FC<Props> = ({ columns, rows, pagination, onRowClick }) => {
   const [rowsPerPage, setRowsPerPage] = useRowsPerPageStore()
 
   const columnMap = new Map(Object.entries(columns))
@@ -55,7 +56,11 @@ export const PaginatedTable: FC<Props> = ({ columns, rows, pagination }) => {
       </TableHeader>
       <TableBody>
         {rows.map(({ key, data }) => (
-          <TableRow key={key}>
+          <TableRow
+            key={key}
+            className={onRowClick ? 'cursor-pointer' : undefined}
+            onClick={() => onRowClick?.(data)}
+          >
             {Array.from(columnMap).map(([column, columnData]) => {
               if (data[column] === undefined)
                 console.warn(`PaginatedTable: Missing value for column ${column} on row`, data)

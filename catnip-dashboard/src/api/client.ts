@@ -2,10 +2,10 @@ import { apiUrl } from '@/const'
 import { objectToSnake, objectToCamel } from 'ts-case-convert'
 import { parsePayload } from '../schemas/_utils'
 import { ApiError } from './error'
-import type { ZodType } from 'zod'
+import type { ZodObject } from 'zod'
 import type { ApiCallOptions } from '@/types/api'
 
-const fetchApi = async <T extends ZodType, P extends Object>(
+const fetchApi = async <T extends ZodObject, P extends Object>(
   method: string,
   path: string,
   schema?: T,
@@ -76,7 +76,7 @@ const fetchApi = async <T extends ZodType, P extends Object>(
   }
 }
 
-const apiCall = async <T extends ZodType, P extends Object>(
+const apiCall = async <T extends ZodObject, P extends Object>(
   method: string,
   path: string,
   schema?: T,
@@ -89,27 +89,27 @@ const apiCall = async <T extends ZodType, P extends Object>(
 }
 
 export const api = {
-  get: <T extends ZodType, P extends Object>(
+  get: <T extends ZodObject, P extends Object>(
     path: string,
     schema: T,
     options?: ApiCallOptions<P>,
   ) => apiCall('GET', path, schema, options),
-  post: <T extends ZodType, P extends Object>(
+  post: <T extends ZodObject, P extends Object>(
     path: string,
     schema?: T,
     options?: ApiCallOptions<P>,
   ) => apiCall('POST', path, schema, options),
-  put: <T extends ZodType, P extends Object>(
+  put: <T extends ZodObject, P extends Object>(
     path: string,
     schema?: T,
     options?: ApiCallOptions<P>,
   ) => apiCall('PUT', path, schema, options),
-  patch: <T extends ZodType, P extends Object>(
+  patch: <T extends ZodObject, P extends Object>(
     path: string,
     schema?: T,
     options?: ApiCallOptions<P>,
   ) => apiCall('PATCH', path, schema, options),
-  delete: <T extends ZodType, P extends Object>(
+  delete: <T extends ZodObject, P extends Object>(
     path: string,
     schema?: T,
     options?: ApiCallOptions<P>,

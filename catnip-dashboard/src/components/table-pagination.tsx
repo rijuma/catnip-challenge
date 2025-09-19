@@ -8,11 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { rowsPerPageDefault, rowsPerPageOptions } from '@/const/tables'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { type FC } from 'react'
-
-const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100]
-const ROWS_PER_PAGE_DEFAULT = ROWS_PER_PAGE_OPTIONS[1]
 
 export type Props = {
   currentPage?: number
@@ -25,7 +23,7 @@ export type Props = {
 export const TablePagination: FC<Props> = ({
   currentPage = 1,
   totalRows,
-  rowsPerPage = ROWS_PER_PAGE_DEFAULT,
+  rowsPerPage = rowsPerPageDefault,
   onRowsPerPageChange,
   onPageChange,
 }) => {
@@ -43,7 +41,7 @@ export const TablePagination: FC<Props> = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {ROWS_PER_PAGE_OPTIONS.map((count) => (
+            {rowsPerPageOptions.map((count) => (
               <SelectItem key={count} value={`${count}`}>
                 {count}
               </SelectItem>

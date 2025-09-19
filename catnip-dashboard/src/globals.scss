@@ -3,7 +3,7 @@ button[type='button'] {
   cursor: pointer;
 }
 
-.form-loading {
+.loading {
   transition: all 0.2s ease;
   opacity: 0.5;
   pointer-events: none;

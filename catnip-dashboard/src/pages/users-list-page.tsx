@@ -1,96 +1,69 @@
 import { PaginatedTable, type TableColumns, type TableRows } from '@/components/paginated-table'
 import { SearchField } from '@/components/search-field'
 import { Section } from '@/components/section'
+import { useUsers } from '@/hooks'
+import type { User } from '@/schemas'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const columns: TableColumns = {
-  invoice: {
-    label: 'Invoice',
+  email: {
+    label: 'Email',
   },
-  paymentStatus: {
-    label: 'Invoice',
+  fullName: {
+    label: 'Full Name',
   },
-  paymentMethod: {
-    label: 'Payment Method',
-  },
-  amount: {
-    label: 'Amount',
-    columnClassName: 'text-right',
+  createdAt: {
+    label: 'Created At',
   },
 }
 
-const rows: TableRows = [
-  {
-    key: 1,
-    data: {
-      invoice: 'INV001',
-      paymentStatus: 'Paid',
-      amount: '$250.00',
-      paymentMethod: 'Credit Card',
-    },
-  },
-  {
-    key: 2,
-    data: {
-      invoice: 'INV002',
-      paymentStatus: 'Pending',
-      amount: '$150.00',
-      paymentMethod: 'PayPal',
-    },
-  },
-  {
-    key: 3,
-    data: {
-      invoice: 'INV003',
-      paymentStatus: 'Unpaid',
-      amount: '$350.00',
-      paymentMethod: 'Bank Transfer',
-    },
-  },
-  {
-    key: 4,
-    data: {
-      invoice: 'INV004',
-      paymentStatus: 'Paid',
-      amount: '$450.00',
-      paymentMethod: 'Credit Card',
-    },
-  },
-  {
-    key: 5,
-    data: {
-      invoice: 'INV005',
-      paymentStatus: 'Paid',
-      amount: '$550.00',
-      paymentMethod: 'PayPal',
-    },
-  },
-  {
-    key: 6,
-    data: {
-      invoice: 'INV006',
-      paymentStatus: 'Pending',
-      amount: '$200.00',
-      paymentMethod: 'Bank Transfer',
-    },
-  },
-  {
-    key: 7,
-    data: {
-      invoice: 'INV007',
-      paymentStatus: 'Unpaid',
-      amount: '$300.00',
-      paymentMethod: 'Credit Card',
-    },
-  },
-]
-
 function UsersListPage() {
+  const navigate = useNavigate()
+  const [filter, updateFilter] = useState('')
+  const [page, setPage] = useState(0)
+
+  const { loading, userList, count } = useUsers({
+    search: filter,
+    page,
+  })
+
+  const handleUpdateFilter = (search: string) => {
+    updateFilter(search)
+  }
+
+  const handleRowClick = (user: any) => {
+    console.log({ user })
+    navigate(`/users/${user.uuid}`)
+  }
+
+  const handlePageChange = (page: number) => setPage(page)
+
+  const formatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'short' })
+
+  const rows: TableRows = userList.map((user) => ({
+    key: user.uuid,
+    data: {
+      uuid: user.uuid,
+      email: user.email,
+      fullName: [user.firstName, user.lastName].join(' '),
+      createdAt: formatter.format(user.createdAt),
+    },
+  }))
+
   return (
     <Section>
       <div>
-        <SearchField autoFocus />
+        <SearchField autoFocus onDebouncedChange={handleUpdateFilter} />
       </div>
-      <PaginatedTable columns={columns} rows={rows} />
+      <div className={loading ? 'loading' : undefined}>
+        <PaginatedTable
+          onRowClick={handleRowClick}
+          columns={columns}
+          rows={rows}
+          pagination={{ currentPage: page, totalRows: count, onPageChange: handlePageChange }}
+        />
+      </div>
     </Section>
   )
 }

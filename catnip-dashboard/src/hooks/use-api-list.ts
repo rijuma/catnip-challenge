@@ -10,7 +10,7 @@ const listInit = {
   count: 0,
 }
 
-export type useApiListFilters<Z extends ZodObject> = {
+export type useApiListProps<Z extends ZodObject> = {
   url: string
   schema: Z
   search?: string
@@ -21,7 +21,7 @@ export const useApiList = <Z extends ZodObject>({
   page = 0,
   url,
   schema,
-}: useApiListFilters<Z>) => {
+}: useApiListProps<Z>) => {
   const [loading, setLoading] = useState(true)
   const [rowsPerPage] = useRowsPerPageStore()
 
@@ -40,12 +40,6 @@ export const useApiList = <Z extends ZodObject>({
   const urlFilters = filters.join('&')
 
   const fetchUsers = async (signal: AbortSignal) => {
-    // If nothing to search, clear
-    if (!search) {
-      setListState(listInit)
-      return
-    }
-
     // Otherwise, do search
     try {
       setLoading(true)

@@ -6,6 +6,18 @@ import { userSchema } from '@/schemas'
 import { useState, type ComponentProps, type FC } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const columns: TableColumns = {
+  email: {
+    label: 'Email',
+  },
+  fullName: {
+    label: 'Full Name',
+  },
+  createdAt: {
+    label: 'Created At',
+  },
+}
+
 type UsersListTableProps = {
   search: string
   onRowClick: ComponentProps<typeof PaginatedTable>['onRowClick']
@@ -15,7 +27,7 @@ const UsersListTable: FC<UsersListTableProps> = ({ search, onRowClick }) => {
 
   const { loading, list, count } = useApiList({
     search,
-    url: '/users',
+    url: '/users/',
     page,
     schema: userSchema,
   })
@@ -51,18 +63,6 @@ const UsersListTable: FC<UsersListTableProps> = ({ search, onRowClick }) => {
       No results for "{search}".
     </div>
   )
-}
-
-const columns: TableColumns = {
-  email: {
-    label: 'Email',
-  },
-  fullName: {
-    label: 'Full Name',
-  },
-  createdAt: {
-    label: 'Created At',
-  },
 }
 
 function UsersListPage() {

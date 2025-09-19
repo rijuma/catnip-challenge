@@ -44,7 +44,7 @@ export const PaginatedTable: FC<Props> = ({ columns, rows, pagination, onRowClic
   const columnMap = new Map(Object.entries(columns))
 
   return (
-    <Table>
+    <Table className="overflow-y-visible">
       <TableHeader>
         <TableRow>
           {Array.from(columnMap).map(([column, { label, className, columnClassName }]) => (

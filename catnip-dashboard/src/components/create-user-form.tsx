@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from './ui/button'
 import { useState, type FC } from 'react'
 import { api } from '@/api/client'
+import { FormRootError } from './form-root-error'
 
 export type Props = {
   user?: CreateUser
@@ -22,6 +23,7 @@ export const EditUserForm: FC<Props> = ({ user = {}, onCancel, onSuccess }) => {
   })
 
   const onSubmit = async (values: CreateUser) => {
+    console.log('Submit!')
     if (loading) return
 
     try {
@@ -33,10 +35,13 @@ export const EditUserForm: FC<Props> = ({ user = {}, onCancel, onSuccess }) => {
         body: values,
       })
 
+      console.log({ user })
+
       if (!user) throw new Error('Server Error')
 
       onSuccess?.(user)
     } catch (e) {
+      console.log('error')
       form.setError('root', { message: `Error creating user: ${(e as Error).message}` })
     } finally {
       setLoading(false)
@@ -48,7 +53,7 @@ export const EditUserForm: FC<Props> = ({ user = {}, onCancel, onSuccess }) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(() => onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className={loading ? 'form-loading' : undefined}>
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Create user</CardTitle>
@@ -88,6 +93,7 @@ export const EditUserForm: FC<Props> = ({ user = {}, onCancel, onSuccess }) => {
           </CardContent>
           <hr />
           <CardFooter className="flex-col gap-4">
+            <FormRootError form={form} />
             <Button type="submit" className="w-full">
               Create
             </Button>
